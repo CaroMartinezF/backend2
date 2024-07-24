@@ -1,0 +1,56 @@
+h1{
+    background-color: black;
+    width: 100%;
+    color: white;
+    text-align: center;
+}
+.productsContainer{
+    background-color: gray;
+    display: flex; 
+    padding: .625rem;
+    justify-content: space-evenly;
+    margin: .625rem;
+    flex-wrap: wrap;
+}
+
+#productsContainer{
+    background-color: gray;
+    display: flex; 
+    padding: .625rem;
+    justify-content: space-evenly;
+    margin: .625rem;
+    flex-wrap: wrap;
+    
+}
+.cardContainer{
+    background-color: rgb(233, 73, 148);
+    border-radius: .625rem;
+    padding: .625rem;
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 1px 1px 1px black;
+    margin: .625rem;
+    width: 25%;
+
+}
+#formContainer{
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    background-color: grey;
+    margin: .625rem;
+    flex-direction: column;
+}
+
+#form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    input{
+        background-color: rgb(233, 73, 148);
+    }
+}
+
