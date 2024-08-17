@@ -3,6 +3,8 @@ import { Router } from "express";
 import { productValidator } from "../../middleware/productValidator.js";
 import { validarPut } from "../../middleware/productValidator.js";
 import * as controller from '../controllers/products.controller.js'
+import passport from 'passport';
+import { authorizationRole } from "../../middleware/auth.middleware.js";
 
 const router = Router();
 
@@ -13,12 +15,12 @@ router.get('/', controller.getProducts)
 router.get('/:pid', controller.getProductById)
 
 //Agregar Producto
-router.post('/', productValidator, controller.addProduct)
+router.post('/', passport.authenticate("jwt",{session: false}), authorizationRole(['admin']), productValidator, controller.addProduct)
 
 //Actualizar Producto
-router.put('/:pid', validarPut, controller.updateProduct)
+router.put('/:pid', passport.authenticate("jwt",{session: false}), authorizationRole(['admin']), validarPut, controller.updateProduct)
 
 //Borrar Producto
-router.delete('/:pid', controller.deleteProduct)
+router.delete('/:pid', passport.authenticate("jwt",{session: false}), authorizationRole(['admin']), controller.deleteProduct)
 
 export default router

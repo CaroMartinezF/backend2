@@ -1,4 +1,7 @@
 import * as services from '../services/carts.service.js'
+import { getProductById, updateProduct } from '../services/products.service.js';
+import {v4 as uuidv4} from 'uuid';
+import { resTicketDto } from '../dtos/ticket.dto.js';
 
 export const addCart = async(req, res)=>{
     try{
@@ -101,3 +104,89 @@ export const deleteAllProductsOfCart =  async (req, res)=>{
         res.status(404).json({msj:"error"})
     }
 }
+
+export const purchase = async (req, res)=>{
+    const {cid} = req.params;
+
+    try {
+        
+        
+        //Verificar Existencia de Carrito
+        const cart = await services.getCartProductsById(cid)
+
+        if(!cart){
+            return res.status(400).send("Carrito no encontrado")
+        }
+        
+        let ticketProducts = []
+        let productsOutOfStock=[]
+        let TotalPurchase = 0
+
+        //ForEach de cart.products
+        await Promise.allSettled(
+
+        cart.products.map( async (product)=>{
+            const dbProduct = await getProductById(product.product)
+
+            //Existe el Producto
+            if(dbProduct){
+                
+                if(product.quantity <= dbProduct.stock){
+                    
+                    //Decremento de Stock de Producto
+                    await updateProduct(product.product, {stock: dbProduct.stock - product.quantity})
+                    
+                    //Agrego a array de productos en ticket
+                    ticketProducts.push(product)
+                    
+                    //Sumo al total
+                    TotalPurchase += product.quantity * dbProduct.price;
+                    
+                    //Borro Producto del Carrito
+                    await services.removeProductOfCartById(cid, product.product._id)
+
+                }else{
+                    productsOutOfStock.push(product)
+                }
+            }
+            else{
+                productsOutOfStock.push(product)
+                
+            }
+        })
+        )
+
+        //Busqueda de User por Email
+        const userComplete = await services.getUserByEmail(req.user.email)
+
+        if(userComplete ==null){
+            return res.status(400).send("Usuario Inexistente")
+        }
+        
+        //Generacion de Codigo Unico
+        const code = uuidv4();
+
+        //Generacion de Ticket a guardar en DB
+        const ticket ={
+            code: code,
+            amount: TotalPurchase,
+            purchaser: req.user.email,
+            purchaserId: userComplete[0]._id
+        }
+        const ticketResponse = await services.addTicket(ticket)
+
+        if(ticketResponse!=null){
+            console.log(ticketResponse);
+            
+            return res.status(200).json({ ticket: resTicketDto(ticketResponse[0]), ticketProducts: ticketProducts ,productOutOfStock:productsOutOfStock })
+        }else{
+            
+            return res.status(400).send("No fue posible generar el ticket")
+        }
+    } catch (error) {
+        console.log(error);
+        
+        res.status(404).json({msj:error})
+    }
+}
+
