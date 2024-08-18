@@ -16,7 +16,22 @@ class UserManager{
         
         return await UserModel.find({email})
     }
-    
+    //Agregar cart
+    async addCartToUser(email, cart_id){
+        try {
+            const user = await this.getUserByEmail(email)
+            const resp = await UserModel.findByIdAndUpdate( user[0]._id, {cart: cart_id}, {new: true});
+            console.log("addcarttouser", resp);
+            console.log("user", user);
+            console.log("cartid", cart_id);
+            
+            
+            return resp
+            
+        } catch (error) {
+            console.log(error);
+        }
+    }
 }
 
 export const UserDaoMongoDB = new UserManager()

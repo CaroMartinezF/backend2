@@ -4,8 +4,18 @@ import {v4 as uuidv4} from 'uuid';
 import { resTicketDto } from '../dtos/ticket.dto.js';
 
 export const addCart = async(req, res)=>{
+    const user = req.user;
+    
     try{
-        res.status(200).json(await services.addCart()) 
+        const dbUser = await services.getUserByEmail(user.email);
+console.log(`dbUser: ${dbUser}`);
+
+        if(dbUser[0].cart) {
+            return res.status(404).send(`Ya existe el cart ${dbUser[0].cart} para este usuario`)
+        }
+        const newCart = await services.addCart()
+        const userWithCart = await services.addCartToUser(user.email, newCart._id)
+        res.status(200).json({mensaje: `Se creó un nuevo cart para el usuario ${userWithCart.email}`, cart: newCart})
     }
     catch(error){
         console.log(error);

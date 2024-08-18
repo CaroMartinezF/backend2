@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { getUserByEmail } from "../services/carts.service.js";
 
 export const userDto = Joi.object({
     first_name: Joi.string().required(),
@@ -10,11 +11,17 @@ export const userDto = Joi.object({
     role: Joi.string().required(),
 })
 
-export const resUserDto = (user)=>{
+export const resUserDto = async (user)=>{
+    const dbUser = await getUserByEmail(user.email)
     const responseUserData = {
         email: user.email,
         role: user.role
     }
 
+    if (dbUser[0].cart) {
+        responseUserData.cart = dbUser[0].cart
+    }
+    console.log(responseUserData);
+    
     return responseUserData
 }
